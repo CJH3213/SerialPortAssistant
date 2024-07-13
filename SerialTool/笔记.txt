@@ -1,0 +1,15 @@
+1.	在.pro中添加QT+=serialport后，报错模块serialport无法导入，
+	打开QT Maintance Tool工具，在添加组件中搜索serial，发现我现在用的
+	Qt 6.7.1版本没这个组件，Qt 6.7.2有。于是取消勾选6.7.1，再对应勾选上
+	6.7.2的相应组件和serial port组件，点击下一步后，就会自动卸载6.7.1再
+	安装6.7.2。这时候在.pro中添加QT+=serialport就不报错了。
+
+https://stackoverflow.com/questions/77236112/unknown-modules-in-qt-serialport
+
+2.	设置基础Widget跟随窗口缩放，在ui设计页面，右侧对象中点击基础的Widget，
+	默认它显示“分拆布局”，右键布局改为水平/垂直布局即可。
+
+3.	先通过release生成一个exe，将这个exe拷贝出一个文件夹下，
+	打开Qt 6.7.2(MinGW)黑窗软件，cd切换到文件夹路径下，
+	输入命令：windeployqt 软件名.exe，自动将所需依赖复制到该文件夹下，
+	这个文件夹可以带到别的电脑，直接运行。
