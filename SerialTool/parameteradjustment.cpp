@@ -3,6 +3,7 @@
 #include "protocol.h"
 #include <QDebug>
 #include <QSettings>
+#include "parameteradjustmentitem.h"
 
 ParameterAdjustment::ParameterAdjustment(MainWidget* baseWidget, QWidget *parent)
     : QWidget(parent)
@@ -15,33 +16,8 @@ ParameterAdjustment::ParameterAdjustment(MainWidget* baseWidget, QWidget *parent
 
     connect(baseWidget, SIGNAL(sendReceiveBytes(QByteArray)), this, SLOT(ReadSerialData(QByteArray)));
 
-    // 限制输入框只能输入数值
-    QValidator *validator = new QDoubleValidator(this);
-    ui->le_UprightKP_SendValue->setValidator(validator);
-    ui->le_UprightKP_Scale->setValidator(validator);
-    ui->le_UprightKI_SendValue->setValidator(validator);
-    ui->le_UprightKI_Scale->setValidator(validator);
-    ui->le_UprightKD_SendValue->setValidator(validator);
-    ui->le_UprightKD_Scale->setValidator(validator);
-    ui->le_SpeedKP_SendValue->setValidator(validator);
-    ui->le_SpeedKP_Scale->setValidator(validator);
-    ui->le_SpeedKI_SendValue->setValidator(validator);
-    ui->le_SpeedKI_Scale->setValidator(validator);
-    ui->le_SpeedKD_SendValue->setValidator(validator);
-    ui->le_SpeedKD_Scale->setValidator(validator);
-
-    // 将 通讯码 与 UI控件 打包成项
-    mItemPackages.append({0x09, 0x01, ui->lb_UprightKP_ReceiveValue, ui->le_UprightKP_SendValue, ui->cb_UprightKP_DataType, ui->le_UprightKP_Scale});
-    mItemPackages.append({0x09, 0x02, ui->lb_UprightKI_ReceiveValue, ui->le_UprightKI_SendValue, ui->cb_UprightKI_DataType, ui->le_UprightKI_Scale});
-    mItemPackages.append({0x09, 0x03, ui->lb_UprightKD_ReceiveValue, ui->le_UprightKD_SendValue, ui->cb_UprightKD_DataType, ui->le_UprightKD_Scale});
-    mItemPackages.append({0x0A, 0x01, ui->lb_SpeedKP_ReceiveValue, ui->le_SpeedKP_SendValue, ui->cb_SpeedKP_DataType, ui->le_SpeedKP_Scale});
-    mItemPackages.append({0x0A, 0x02, ui->lb_SpeedKI_ReceiveValue, ui->le_SpeedKI_SendValue, ui->cb_SpeedKI_DataType, ui->le_SpeedKI_Scale});
-    mItemPackages.append({0x0A, 0x03, ui->lb_SpeedKD_ReceiveValue, ui->le_SpeedKD_SendValue, ui->cb_SpeedKD_DataType, ui->le_SpeedKD_Scale});
-
     // 装载之前的窗口状态
-    QSettings settings("./MyApp.ini", QSettings::IniFormat);
-    this->restoreGeometry(settings.value("ParameterAdjustment/Geometry").toByteArray());
-    RestoreItemPackagesSettings();
+    RestoreSettings();
 }
 
 ParameterAdjustment::~ParameterAdjustment()
@@ -51,9 +27,7 @@ ParameterAdjustment::~ParameterAdjustment()
 
 void ParameterAdjustment::closeEvent(QCloseEvent *event)
 {
-    QSettings settings("./MyApp.ini", QSettings::IniFormat);
-    settings.setValue("ParameterAdjustment/Geometry", this->saveGeometry());
-    SaveItemPackagesSettings();
+    SaveSettings();
 }
 
 void ParameterAdjustment::ReadSerialData(QByteArray bytes)
@@ -62,160 +36,233 @@ void ParameterAdjustment::ReadSerialData(QByteArray bytes)
     QByteArrayList dataList = Protocol::ProtocolDecode(bytes);
 
     foreach (auto data, dataList)
-        foreach (auto itemPackage, mItemPackages)
-            if(itemPackage.mOpCode == data[0] && itemPackage.mSubCode == data[1])
-            {
-                itemPackage.ProcessReceivedValue(data.mid(2));
-                break;
+        for (int row=0; row<ui->tableWidget->rowCount(); ++row)
+        {
+            ParameterAdjustmentItem *configWidget = qobject_cast<ParameterAdjustmentItem*>(ui->tableWidget->cellWidget(row, 3));
+
+            if(configWidget->IsMatch(data.mid(0, 2)) == false)
+                continue;
+
+            try{
+                float value = configWidget->BytesToValueByConfig(data.mid(2));
+                qobject_cast<QLabel*>(ui->tableWidget->cellWidget(row, 1))
+                    ->setText(QString::number(value));
+            } catch(const std::invalid_argument& e){
+                qDebug() << "Error On 'ProcessReceivedValue': "<< e.what();
             }
+            break;
+        }
 }
 
-
-void ParameterAdjustment::ItemPackage::ProcessReceivedValue(QByteArray data)
-{
-    QString type = m_cb_DataType->currentText();
-    float scale = m_le_Scale->text().toFloat();
-
-    try{
-        float value = BytesToValueByConfig(data, type);
-        m_lb_ReceiveValue->setText(QString::number(value/scale));
-    } catch(const std::invalid_argument& e){
-        qDebug() << "Error On 'ProcessReceivedValue': "<< e.what();
-    }
-}
-
-void ParameterAdjustment::ItemPackage::SendValue(QSerialPort *serial)
-{
-    QByteArray data;
-    data.append(mOpCode);
-    data.append(mSubCode);
-    float value = m_le_SendValue->text().toFloat();
-    QString type = m_cb_DataType->currentText();
-    float scale = m_le_Scale->text().toFloat();
-    data.append(ValueToBytesByConfig(value*scale, type));
-    data = Protocol::ProtocolEncode(data);
-    serial->write(data);
-}
-
-float ParameterAdjustment::ItemPackage::BytesToValueByConfig(QByteArray data, QString type)
-{
-    // 接收的数组中，低下标储存高位，高下标储存低位，类似大端模式
-    float value = 0.0f;
-
-    if(type == "int16" && data.size() == 2)
-    {
-        value = (int16_t)((uint8_t)data[0] << 8 | (uint8_t)data[1]);
-    }
-
-    else if(type == "float" && data.size() == 4)
-    {
-        uint32_t value1 = 0x01020304;
-        value1 = data[0]<<24;
-        value1 = data[0]<<24 | data[1]<<16;
-        value1 = data[0]<<24 | data[1]<<16 | data[2]<<8;
-        value1 = (uint8_t)data[0]<<24 | (uint8_t)data[1]<<16 | (uint8_t)data[2]<<8 | (uint8_t)data[3];
-        value =  *(float*)&value1;
-    }
-
-    else
-    {
-        QString str("data cannot converted to " + type);
-        throw std::invalid_argument(str.toStdString());
-    }
-
-    return value;
-}
-
-QByteArray ParameterAdjustment::ItemPackage::ValueToBytesByConfig(float value, QString type)
-{
-    QByteArray data;
-
-    if(type == "int16")
-    {
-        int16_t value1 = value;
-        data.append(value1 >> 8);
-        data.append(value1);
-    }
-
-    else if(type == "float")
-    {
-        uint32_t value1 = *(uint32_t*)&value;
-        data.append(value1 >> 24);
-        data.append(value1 >> 16);
-        data.append(value1 >> 8);
-        data.append(value1);
-    }
-
-    return data;
-}
-
-
-void ParameterAdjustment::on_bt_UprightKP_Send_clicked()
-{
-    // 注意对应数组下标和注册项目的顺序
-    mItemPackages[0].SendValue(mSerialPort);
-}
-
-void ParameterAdjustment::on_bt_UprightKI_Send_clicked()
-{
-    mItemPackages[1].SendValue(mSerialPort);
-}
-
-
-void ParameterAdjustment::on_bt_UprightKD_Send_clicked()
-{
-    mItemPackages[2].SendValue(mSerialPort);
-}
-
-
-void ParameterAdjustment::on_bt_SpeedKP_Send_clicked()
-{
-    mItemPackages[3].SendValue(mSerialPort);
-}
-
-
-void ParameterAdjustment::on_bt_SpeedKI_Send_clicked()
-{
-    mItemPackages[4].SendValue(mSerialPort);
-}
-
-
-void ParameterAdjustment::on_bt_SpeedKD_Send_clicked()
-{
-    mItemPackages[5].SendValue(mSerialPort);
-}
-
-void ParameterAdjustment::SaveItemPackagesSettings()
+void ParameterAdjustment::SaveSettings()
 {
     QSettings settings("./MyApp.ini", QSettings::IniFormat);
+    settings.beginGroup("ParameterAdjustment");
 
-    for(int i=0; i<mItemPackages.size(); i++)
+    // 保存当前窗口的位置、大小几何数据
+    settings.setValue("Geometry", this->saveGeometry());
+
+    // 保存列表项目的数量
+    settings.setValue("TableWidget/rowCount", ui->tableWidget->rowCount());
+
+    // 保存每列的宽度
+    for (int col=0; col<ui->tableWidget->columnCount(); ++col)
     {
-        QString itemKey("ParameterAdjustment/Items/"+QString::number(i)+"/");
-        ItemPackage &itemPackage = mItemPackages[i];
-        // settings.setValue(itemKey+"mOpCode", itemPackage.mOpCode);
-        // settings.setValue(itemKey+"mSubCode", itemPackage.mSubCode);
-        // settings.setValue(itemKey+"m_lb_ReceiveValue", itemPackage.m_lb_ReceiveValue->text());
-        settings.setValue(itemKey+"m_le_SendValue", itemPackage.m_le_SendValue->text());
-        settings.setValue(itemKey+"m_cb_DataType", itemPackage.m_cb_DataType->currentText());
-        settings.setValue(itemKey+"m_le_Scale", itemPackage.m_le_Scale->text());
+        settings.setValue(QString("TableWidget/columnWidth%1").arg(col), ui->tableWidget->columnWidth(col));
+    }
+
+    // 保存每行的高度
+    for (int row=0; row<ui->tableWidget->rowCount(); ++row)
+    {
+        settings.setValue(QString("TableWidget/rowHeight%1").arg(row), ui->tableWidget->rowHeight(row));
+    }
+
+    // 保存列表每项UI的值
+    for(int row=0; row<ui->tableWidget->rowCount(); ++row)
+    {
+        QString baseKey(QString("TableWidget/row%1/itemName/").arg(row));
+        settings.setValue(baseKey+"itemName",
+                          qobject_cast<QLineEdit*>(ui->tableWidget->cellWidget(row, 0))->text());
+        settings.setValue(baseKey+"receivedValue",
+                          qobject_cast<QLabel*>(ui->tableWidget->cellWidget(row, 1))->text());
+        settings.setValue(baseKey+"sendValue",
+                          qobject_cast<QLineEdit*>(ui->tableWidget->cellWidget(row, 2))->text());
+        qobject_cast<ParameterAdjustmentItem*>(ui->tableWidget->cellWidget(row, 3))->
+            SaveSettings(settings, baseKey);
+    }
+
+    settings.endGroup();
+}
+
+void ParameterAdjustment::RestoreSettings()
+{
+    QSettings settings("./MyApp.ini", QSettings::IniFormat);
+    settings.beginGroup("ParameterAdjustment");
+
+    // 加载当前窗口的位置、大小几何数据
+    this->restoreGeometry(settings.value("Geometry").toByteArray());
+
+    // 加载之前保存列表项目的数量
+    int rowCount = settings.value("TableWidget/rowCount", 0).toInt();
+    int columnCount = ui->tableWidget->columnCount();
+
+    // 加载每列宽度
+    for(int col=0; col<columnCount; ++col)
+    {
+        int width = settings.value(QString("TableWidget/columnWidth%1").arg(col), 100).toInt();
+        ui->tableWidget->setColumnWidth(col, width);
+    }
+
+    // 加载每行高度
+    for(int row=0; row<rowCount; ++row)
+    {
+        int height = settings.value(QString("TableWidget/rowHeight%1").arg(row), 100).toInt();
+        ui->tableWidget->setRowHeight(row, height);
+    }
+
+    // 加载列表每项UI的值
+    for(int row=0; row<rowCount; ++row)
+    {
+        ui->tableWidget->insertRow(row);
+
+        QString baseKey(QString("TableWidget/row%1/itemName/").arg(row));
+
+        QLineEdit *itemName = new QLineEdit();
+        ui->tableWidget->setCellWidget(row, 0, itemName);
+        itemName->setText(settings.value(baseKey+"itemName").toString());
+
+        QLabel *receivedValue = new QLabel();
+        ui->tableWidget->setCellWidget(row, 1, receivedValue);
+        receivedValue->setText(settings.value(baseKey+"receivedValue").toString());
+
+        QLineEdit *sendValue = new QLineEdit();
+        ui->tableWidget->setCellWidget(row, 2, sendValue);
+        sendValue->setText(settings.value(baseKey+"sendValue").toString());
+
+        ParameterAdjustmentItem *config = new ParameterAdjustmentItem();
+        ui->tableWidget->setCellWidget(row, 3, config);
+        config->RestoreSettings(settings, baseKey);
+
+        QPushButton *sendButton = new QPushButton();
+        sendButton->setText("发送");
+        connect(sendButton, SIGNAL(clicked()), this, SLOT(handleButtonClicked()));
+        ui->tableWidget->setCellWidget(row, 4, sendButton);
+    }
+
+    settings.endGroup();
+}
+
+int ParameterAdjustment::GetRowForButton(QPushButton *button)
+{
+    for (int row = 0; row < ui->tableWidget->rowCount(); ++row)
+        if (ui->tableWidget->cellWidget(row, 4) == button)
+            return row;
+
+    return -1;
+}
+
+void ParameterAdjustment::SwapRows(int row1, int row2)
+{
+    QString itemName1 = qobject_cast<QLineEdit*>(ui->tableWidget->cellWidget(row1, 0))->text();
+    QString itemName2 = qobject_cast<QLineEdit*>(ui->tableWidget->cellWidget(row2, 0))->text();
+    ui->tableWidget->setCellWidget(row1, 0, new QLineEdit(itemName2));
+    ui->tableWidget->setCellWidget(row2, 0, new QLineEdit(itemName1));
+
+    QString receivedValue1 = qobject_cast<QLabel*>(ui->tableWidget->cellWidget(row1, 1))->text();
+    QString receivedValue2 = qobject_cast<QLabel*>(ui->tableWidget->cellWidget(row2, 1))->text();
+    ui->tableWidget->setCellWidget(row1, 1, new QLabel(receivedValue2));
+    ui->tableWidget->setCellWidget(row2, 1, new QLabel(receivedValue1));
+
+    QString sendValue1 = qobject_cast<QLineEdit*>(ui->tableWidget->cellWidget(row1, 2))->text();
+    QString sendValue2 = qobject_cast<QLineEdit*>(ui->tableWidget->cellWidget(row2, 2))->text();
+    ui->tableWidget->setCellWidget(row1, 2, new QLineEdit(sendValue2));
+    ui->tableWidget->setCellWidget(row2, 2, new QLineEdit(sendValue1));
+
+    ParameterAdjustmentItem* config1 =
+        qobject_cast<ParameterAdjustmentItem*>(ui->tableWidget->cellWidget(row1, 3))->CloneByContent();
+    ParameterAdjustmentItem* config2 =
+        qobject_cast<ParameterAdjustmentItem*>(ui->tableWidget->cellWidget(row2, 3))->CloneByContent();
+    ui->tableWidget->setCellWidget(row1, 3, config2);
+    ui->tableWidget->setCellWidget(row2, 3, config1);
+}
+
+void ParameterAdjustment::handleButtonClicked()
+{
+    QPushButton *button = qobject_cast<QPushButton *>(sender());
+    if (button)
+    {
+        int row = GetRowForButton(button);
+        if(row < 0)
+            return;
+        qDebug() << QString("第%1行的按钮被按下").arg(row);
+
+        ParameterAdjustmentItem *configWidget = qobject_cast<ParameterAdjustmentItem*>(ui->tableWidget->cellWidget(row, 3));
+        QLineEdit *sendValueWidget = qobject_cast<QLineEdit*>(ui->tableWidget->cellWidget(row,2));
+
+        QByteArray data = configWidget->ValueToBytesByConfig(sendValueWidget->text().toFloat());
+        data = Protocol::ProtocolEncode(data);
+        mSerialPort->write(data);
     }
 }
 
-void ParameterAdjustment::RestoreItemPackagesSettings()
-{
-    QSettings settings("./MyApp.ini", QSettings::IniFormat);
 
-    for(int i=0; i<mItemPackages.size(); i++)
-    {
-        QString itemKey("ParameterAdjustment/Items/"+QString::number(i)+"/");
-        ItemPackage &itemPackage = mItemPackages[i];
-        // itemPackage.mOpCode = settings.value(itemKey+"mOpCode").value<char>();
-        // itemPackage.mSubCode = settings.value(itemKey+"mSubCode").value<char>();
-        // itemPackage.m_lb_ReceiveValue->setText(settings.value(itemKey+"m_lb_ReceiveValue","0").toString());
-        itemPackage.m_le_SendValue->setText(settings.value(itemKey+"m_le_SendValue","0").toString());
-        itemPackage.m_cb_DataType->setCurrentText(settings.value(itemKey+"m_cb_DataType","ini16").toString());
-        itemPackage.m_le_Scale->setText(settings.value(itemKey+"m_le_Scale", "1").toString());
-    }
+void ParameterAdjustment::on_bt_AddItem_clicked()
+{
+    // int row = ui->tableWidget->rowCount();
+    int row = ui->tableWidget->currentRow()+1;
+
+    ui->tableWidget->insertRow(row);
+
+    QLineEdit *itemName = new QLineEdit(this);
+    itemName->setText("输入项名");
+    ui->tableWidget->setCellWidget(row, 0, itemName);
+
+    QLabel *receivedValue = new QLabel(this);
+    receivedValue->setText("0");
+    ui->tableWidget->setCellWidget(row, 1, receivedValue);
+
+    QLineEdit *sendValue = new QLineEdit(this);
+    sendValue->setText("0");
+    ui->tableWidget->setCellWidget(row, 2, sendValue);
+
+    ParameterAdjustmentItem *config = new ParameterAdjustmentItem(this);
+    ui->tableWidget->setCellWidget(row, 3, config);
+
+    QPushButton *sendButton = new QPushButton(this);
+    sendButton->setText("发送");
+    connect(sendButton, SIGNAL(clicked()), this, SLOT(handleButtonClicked()));
+    ui->tableWidget->setCellWidget(row, 4, sendButton);
+}
+
+
+void ParameterAdjustment::on_bt_RemoveSelectedItem_clicked()
+{
+    int row = ui->tableWidget->currentRow();
+    if (row != -1)
+        ui->tableWidget->removeRow(row);
+}
+
+
+void ParameterAdjustment::on_bt_MoveUp_clicked()
+{
+    int currentRow = ui->tableWidget->currentRow();
+    if (currentRow > 0) {
+        SwapRows(currentRow, currentRow - 1);
+        ui->tableWidget->selectRow(currentRow - 1);
+    } /*else {
+        QMessageBox::warning(this, "Move Up", "This row is already at the top.");
+    }*/
+}
+
+
+void ParameterAdjustment::on_bt_MoveDown_clicked()
+{
+    int currentRow = ui->tableWidget->currentRow();
+    if (currentRow < ui->tableWidget->rowCount() - 1) {
+        SwapRows(currentRow, currentRow + 1);
+        ui->tableWidget->selectRow(currentRow + 1);
+    } /*else {
+        QMessageBox::warning(this, "Move Down", "This row is already at the bottom.");
+    }*/
 }
 

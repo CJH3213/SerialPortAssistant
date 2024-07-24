@@ -1,0 +1,10 @@
+release/main.o
+release/mainwidget.o
+release/parameteradjustment.o
+release/parameteradjustmentitem.o
+release/protocol.o
+release/receivechart.o
+release/moc_mainwidget.o
+release/moc_parameteradjustment.o
+release/moc_parameteradjustmentitem.o
+release/moc_receivechart.o

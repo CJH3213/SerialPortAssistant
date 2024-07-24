@@ -12,18 +12,21 @@ SOURCES += \
     main.cpp \
     mainwidget.cpp \
     parameteradjustment.cpp \
+    parameteradjustmentitem.cpp \
     protocol.cpp \
     receivechart.cpp
 
 HEADERS += \
     mainwidget.h \
     parameteradjustment.h \
+    parameteradjustmentitem.h \
     protocol.h \
     receivechart.h
 
 FORMS += \
     mainwidget.ui \
     parameteradjustment.ui \
+    parameteradjustmentitem.ui \
     receivechart.ui
 
 # Default rules for deployment.

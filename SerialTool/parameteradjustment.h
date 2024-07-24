@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "mainwidget.h"
+#include "qpushbutton.h"
 #include <QLabel>
 #include <QLineEdit>
 #include <QComboBox>
@@ -25,41 +26,28 @@ protected:
 
 private slots:
     void ReadSerialData(QByteArray bytes);
-    void on_bt_UprightKP_Send_clicked();
-    void on_bt_UprightKI_Send_clicked();
-    void on_bt_UprightKD_Send_clicked();
-    void on_bt_SpeedKP_Send_clicked();
-    void on_bt_SpeedKI_Send_clicked();
-    void on_bt_SpeedKD_Send_clicked();
+    void on_bt_AddItem_clicked();
+    void on_bt_RemoveSelectedItem_clicked();
+    // 处理表内按钮事件
+    void handleButtonClicked();
+
+    void on_bt_MoveUp_clicked();
+
+    void on_bt_MoveDown_clicked();
 
 private:
-    struct ItemPackage
-    {
-        char mOpCode;
-        char mSubCode;
-        QLabel *m_lb_ReceiveValue;
-        QLineEdit *m_le_SendValue;
-        QComboBox *m_cb_DataType;
-        QLineEdit *m_le_Scale;
-
-        // 直接用参数列表就能初始化成员，就不额外编写构造函数了
-        // ItemPackage() {}
-
-        void ProcessReceivedValue(QByteArray data);
-        void SendValue(QSerialPort *serial);
-
-        // 结合UI配置参数，将接收到的数据转成浮点数。转换失败会抛出异常！
-        static float BytesToValueByConfig(QByteArray data, QString type);
-        static QByteArray ValueToBytesByConfig(float value, QString type);
-    };
 
     Ui::ParameterAdjustment *ui;
     QSerialPort *mSerialPort;
-    QList<ItemPackage> mItemPackages;
 
     // 保存用户设置
-    void SaveItemPackagesSettings();
-    void RestoreItemPackagesSettings();
+    void SaveSettings();
+    void RestoreSettings();
+
+    // 传入按钮控件指针，返回按钮所在表行数
+    int GetRowForButton(QPushButton *button);
+    // 交换表内两行内容
+    void SwapRows(int row1, int row2);
 };
 
 #endif // PARAMETERADJUSTMENT_H
