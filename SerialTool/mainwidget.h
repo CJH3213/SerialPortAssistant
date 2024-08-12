@@ -3,6 +3,9 @@
 
 #include <QWidget>
 #include <QSerialPort>
+#include "connectionsettings.h"
+#include "idatareceiver.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -18,32 +21,35 @@ public:
     MainWidget(QWidget *parent = nullptr);
     ~MainWidget();
 
+    void WriteData(const QByteArray &bytes);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
-    bool eventFilter(QObject *watched, QEvent *event) override;
 
 signals:
     void sendReceiveBytes(QByteArray bytes);
     void broadcastMainWidgetCloseEvent();
 
 private slots:
-    void on_mConnectButton_clicked();
-    void ReadSerialData();
+    void OnReadData(const QByteArray & bytes);
     void on_mReceiveClearButton_clicked();
     void on_mSendClearButton_clicked();
     void on_mSendButton_clicked();
     void on_mSendHexCheckBox_stateChanged(int arg1);
     void on_pushButton_clicked();
     void on_pushButton_2_clicked();
-
-public:
-    QSerialPort mSerialPort;
+    void on_mOpenConnectionDialogButton_clicked();
+    void on_cb_AutoClear_checkStateChanged(const Qt::CheckState &arg1);
+    void on_le_ClearThreshold_editingFinished();
 
 private:
     Ui::Widget *ui;
     QMap<QString, QWidget*> mSubWidgets;
+    DataReceiverManager mDataReceiverManager;
+
+    ConnectionSettings *mConnectionSettings = nullptr;
     qsizetype mReceiveCount = 0;
+    qsizetype mReceiveAutoClearNum = 0;
     qsizetype mSendCount = 0;
 
     void OpenSubWindow(const QString &windowType);
@@ -57,5 +63,7 @@ private:
     void EnsureCRLF(QByteArray& bytes);
 
     void SetEnableForSerialConfigWidgets(bool b);
+
+
 };
 #endif // MAINWIDGET_H

@@ -416,6 +416,8 @@ Makefile: ../../SerialTool.pro E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/mkspecs/win
 		E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6Gui.prl \
 		E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6SerialPort.prl \
 		E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6Core5Compat.prl \
+		E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6Bluetooth.prl \
+		E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6Network.prl \
 		E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6Core.prl \
 		E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6EntryPoint.prl \
 		E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/mkspecs/features/build_pass.prf
@@ -766,6 +768,8 @@ E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6OpenGL.prl:
 E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6Gui.prl:
 E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6SerialPort.prl:
 E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6Core5Compat.prl:
+E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6Bluetooth.prl:
+E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6Network.prl:
 E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6Core.prl:
 E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/lib/Qt6EntryPoint.prl:
 E:/Softwares/Qt/Qt_6.7/6.7.2/mingw_64/mkspecs/features/build_pass.prf:

@@ -2,35 +2,28 @@
 #include "ui_mainwidget.h"
 #include <QSerialPortInfo>
 #include <QMessageBox>
-#include "receivechart.h"
 #include <QTextCodec>
+#include "receivechart.h"
 #include "parameteradjustment.h"
+#include "connectiondialog.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
 {
     ui->setupUi(this);
-    setWindowTitle("串口通讯助手");
 
-    UpdatePortList();
-    ui->mPortNamesComboBox->installEventFilter(this);
-    ui->mBaudrateComboBox->addItems({"1200", "2400", "4800", "9600", "19200", "38400", "57600",
-                                     "115200", "128000", "230400", "256000", "460800", "921600"});
-    ui->mBaudrateComboBox->setCurrentText("9600");
-    AddItemsForDataBitsComboBox();
-    AddItemsForStopBitsComboBox();
-    AddItemsForParityComboBox();
+    // 设置小数位数为10，范围为0到最大双精度浮点数
+    QDoubleValidator *validator = new QDoubleValidator(0.0, std::numeric_limits<double>::max(), 3, this);
+    validator->setNotation(QDoubleValidator::StandardNotation); // 标准模式，不允许科学计数法
+    ui->le_ClearThreshold->setValidator(validator);
 
     // 装载之前的窗口状态
     QSettings settings("./MyApp.ini", QSettings::IniFormat);
     this->restoreGeometry(settings.value("MainWidget/Geometry").toByteArray());
-    ui->mPortNamesComboBox->setCurrentText(settings.value("MainWidget/mPortNamesComboBox").toString());
-    ui->mBaudrateComboBox->setCurrentText(settings.value("MainWidget/mBaudrateComboBox").toString());
-    ui->mDataBitsComboBox->setCurrentText(settings.value("MainWidget/mDataBitsComboBox").toString());
-    ui->mStopBitsComboBox->setCurrentText(settings.value("MainWidget/mStopBitsComboBox").toString());
-    ui->mParityComboBox->setCurrentText(settings.value("MainWidget/mParityComboBox").toString());
     ui->mReceiveHexCheckBox->setCheckState(settings.value("MainWidget/mReceiveHexCheckBox").value<Qt::CheckState>());
+    ui->le_ClearThreshold->setText(settings.value("MainWidget/le_ClearThreshold", 100).toString());
+    ui->cb_AutoClear->setCheckState(settings.value("MainWidget/cb_AutoClear").value<Qt::CheckState>());
     // 设置CheckBoxState后会触发信号-槽函数，会将发送文本框内容再转换一次；所以应先设置CheckBox后再填入发送文本框内容，以避免重复转换
     ui->mSendHexCheckBox->setCheckState(settings.value("MainWidget/mSendHexCheckBox").value<Qt::CheckState>());
     ui->mSendLineFeedCheckBox->setCheckState(settings.value("MainWidget/mSendLineFeedCheckBox").value<Qt::CheckState>());
@@ -57,12 +50,9 @@ void MainWidget::closeEvent(QCloseEvent *event)
     // 以下为关闭应用软件前的保存处理
     QSettings settings("./MyApp.ini", QSettings::IniFormat);
     settings.setValue("MainWidget/Geometry", this->saveGeometry());
-    settings.setValue("MainWidget/mPortNamesComboBox", ui->mPortNamesComboBox->currentText());
-    settings.setValue("MainWidget/mBaudrateComboBox", ui->mBaudrateComboBox->currentText());
-    settings.setValue("MainWidget/mDataBitsComboBox", ui->mDataBitsComboBox->currentText());
-    settings.setValue("MainWidget/mStopBitsComboBox", ui->mStopBitsComboBox->currentText());
-    settings.setValue("MainWidget/mParityComboBox", ui->mParityComboBox->currentText());
     settings.setValue("MainWidget/mReceiveHexCheckBox", ui->mReceiveHexCheckBox->checkState());
+    settings.setValue("MainWidget/cb_AutoClear", ui->cb_AutoClear->checkState());
+    settings.setValue("MainWidget/le_ClearThreshold", ui->le_ClearThreshold->text());
     settings.setValue("MainWidget/mSendTextEdit", ui->mSendTextEdit->toPlainText());
     settings.setValue("MainWidget/mSendHexCheckBox", ui->mSendHexCheckBox->checkState());
     settings.setValue("MainWidget/mSendLineFeedCheckBox", ui->mSendLineFeedCheckBox->checkState());
@@ -70,53 +60,11 @@ void MainWidget::closeEvent(QCloseEvent *event)
     qApp->closeAllWindows();
 }
 
-bool MainWidget::eventFilter(QObject *watched, QEvent *event)
+void MainWidget::OnReadData(const QByteArray &bytes)
 {
-    if(watched == ui->mPortNamesComboBox)
-        if(event->type() == QEvent::MouseButtonPress)
-        {
-            UpdatePortList();
-            qDebug() << "ComboBox be Press.";
-        }
-    return QWidget::eventFilter(watched, event);
-}
+    mDataReceiverManager.InvokeAll(bytes);
 
-void MainWidget::on_mConnectButton_clicked()
-{
-    if(mSerialPort.isOpen() == false)
-    {
-        mSerialPort.setPortName(ui->mPortNamesComboBox->currentText());
-        mSerialPort.setBaudRate(ui->mBaudrateComboBox->currentText().toInt());
-        mSerialPort.setDataBits(ui->mDataBitsComboBox->currentData().value<QSerialPort::DataBits>());
-        mSerialPort.setStopBits(ui->mStopBitsComboBox->currentData().value<QSerialPort::StopBits>());
-        mSerialPort.setParity(ui->mParityComboBox->currentData().value<QSerialPort::Parity>());
-
-        if(mSerialPort.open(QIODevice::ReadWrite) == false)
-        {
-            QString str("打开串口" + ui->mPortNamesComboBox->currentText() + "失败");
-            QMessageBox::warning(this, "警告", str);
-            return;
-        }
-
-        connect(&mSerialPort, SIGNAL(readyRead()), this, SLOT(ReadSerialData()));
-
-        SetEnableForSerialConfigWidgets(false);
-        ui->mConnectButton->setText("关闭串口");
-    }
-    else
-    {
-        mSerialPort.close();
-
-        SetEnableForSerialConfigWidgets(true);
-        ui->mConnectButton->setText("打开串口");
-    }
-}
-
-void MainWidget::ReadSerialData()
-{
-    QByteArray bytes = mSerialPort.readAll();
-
-    emit sendReceiveBytes(bytes);
+    // emit sendReceiveBytes(bytes);
 
     mReceiveCount += bytes.length();
     ui->mReceiveCountLabel->setText("接收字节：" + QString::number(mReceiveCount));
@@ -131,55 +79,23 @@ void MainWidget::ReadSerialData()
     else
     {
         foreach (auto b, bytes)
-            str += QString::number((uint8_t)b, 16).rightJustified(2,'0') + ' ';
-            // str += QString::number((uint8_t)b, 16).toUpper() + ' ';
+        str += QString::number((uint8_t)b, 16).rightJustified(2,'0') + ' ';
+        // str += QString::number((uint8_t)b, 16).toUpper() + ' ';
     }
 
-    //setUpdatesEnabled(false);
+
+    QString text = ui->mReceiveTextEdit->toPlainText();
+    text += str;
+
+    // 裁掉太长的老数据，减轻卡顿现象
+    if(mReceiveAutoClearNum > 0 && text.size() > mReceiveAutoClearNum)
+        text = text.mid(text.size()-mReceiveAutoClearNum);
+
+    ui->mReceiveTextEdit->setPlainText(text);
+
+    // ui->mReceiveTextEdit->moveCursor(QTextCursor::End);
+    // ui->mReceiveTextEdit->insertPlainText(str); // 注意插入文本位置不是文末而是光标位置，所以需设为只读模式
     ui->mReceiveTextEdit->moveCursor(QTextCursor::End);
-    ui->mReceiveTextEdit->insertPlainText(str); // 注意插入文本位置不是文末而是光标位置，所以需设为只读模式
-    ui->mReceiveTextEdit->moveCursor(QTextCursor::End);
-    //setUpdatesEnabled(true);
-}
-
-void MainWidget::UpdatePortList()
-{
-    QStringList serialPortNames;
-    foreach (auto &info, QSerialPortInfo::availablePorts())
-    {
-        serialPortNames.append(info.portName());
-        qWarning() << "serialPortName:" << info.portName();
-    }
-    ui->mPortNamesComboBox->clear();
-    ui->mPortNamesComboBox->addItems(serialPortNames);
-}
-
-void MainWidget::AddItemsForDataBitsComboBox()
-{
-    // ui->mDataBitComboBox->addItems({"8", "7", "6", "5"});
-    ui->mDataBitsComboBox->addItem("8", QSerialPort::Data8);
-    ui->mDataBitsComboBox->addItem("7", QSerialPort::Data7);
-    ui->mDataBitsComboBox->addItem("6", QSerialPort::Data6);
-    ui->mDataBitsComboBox->addItem("5", QSerialPort::Data5);
-    ui->mDataBitsComboBox->setCurrentText("8");
-}
-
-void MainWidget::AddItemsForStopBitsComboBox()
-{
-    // ui->mStopBitComboBox->addItems({"1", "1.5", "2"});
-    ui->mStopBitsComboBox->addItem("1", QSerialPort::OneStop);
-    ui->mStopBitsComboBox->addItem("1.5", QSerialPort::OneAndHalfStop);
-    ui->mStopBitsComboBox->addItem("2", QSerialPort::TwoStop);
-    ui->mStopBitsComboBox->setCurrentText("1");
-}
-
-void MainWidget::AddItemsForParityComboBox()
-{
-    // ui->mParityComboBox->addItems({"无", "奇", "偶"});
-    ui->mParityComboBox->addItem("无", QSerialPort::NoParity);
-    ui->mParityComboBox->addItem("奇", QSerialPort::OddParity);
-    ui->mParityComboBox->addItem("偶", QSerialPort::EvenParity);
-    ui->mParityComboBox->setCurrentText("无");
 }
 
 QString MainWidget::GB2312StringToHexString(QString str)
@@ -228,21 +144,12 @@ void MainWidget::EnsureCRLF(QByteArray& bytes)
     tempBytes.swap(bytes);
 }
 
-void MainWidget::SetEnableForSerialConfigWidgets(bool b)
+void MainWidget::WriteData(const QByteArray &bytes)
 {
-    ui->mPortNamesComboBox->setEnabled(b);
-    ui->mBaudrateComboBox->setEnabled(b);
-    ui->mDataBitsComboBox->setEnabled(b);
-    ui->mStopBitsComboBox->setEnabled(b);
-    ui->mParityComboBox->setEnabled(b);
-
-    QString styleSheet = b ? "" : "color: gray; background-color: lightgray;";
-
-    ui->mPortNamesComboBox->setStyleSheet(styleSheet);
-    ui->mBaudrateComboBox->setStyleSheet(styleSheet);
-    ui->mDataBitsComboBox->setStyleSheet(styleSheet);
-    ui->mStopBitsComboBox->setStyleSheet(styleSheet);
-    ui->mParityComboBox->setStyleSheet(styleSheet);
+    if(mConnectionSettings != nullptr && mConnectionSettings->IsValid() == true)
+    {
+        mConnectionSettings->Write(bytes);
+    }
 }
 
 
@@ -264,9 +171,6 @@ void MainWidget::on_mSendClearButton_clicked()
 
 void MainWidget::on_mSendButton_clicked()
 {
-    if(mSerialPort.isOpen() == false)
-        return;
-
     QString str = ui->mSendTextEdit->toPlainText();
 
     if(ui->mSendHexCheckBox->isChecked() == true)
@@ -280,7 +184,7 @@ void MainWidget::on_mSendButton_clicked()
     mSendCount += bytes.length();
     ui->mSendCountLabel->setText("发送字节：" + QString::number(mSendCount));
 
-    mSerialPort.write(bytes);
+    WriteData(bytes);
 }
 
 
@@ -322,18 +226,95 @@ void MainWidget::OpenSubWindow(const QString &windowType)
 
     if(newSubWindow != nullptr)
     {
+        // 如果子窗口携带数据接收器，注册接收器
+        // dynamic_cast不能在下面的connect里转换，会得到空指针
+        auto *receiver = dynamic_cast<IDataReceiver*>(newSubWindow);
+        // 注意不能直接将newSubWindow通过强制转换指针类型传入
+        // RegisterReceiver()，虚函数表会出错，无法正确调用
+        mDataReceiverManager.RegisterReceiver(receiver);
+
         mSubWidgets[windowType] = newSubWindow;
         newSubWindow->setAttribute(Qt::WA_DeleteOnClose);   // 窗口关闭时自动释放资源
         // 收到关闭窗口信号，从map中移除
-        connect(newSubWindow, &QWidget::destroyed, this, [=]()
-                {mSubWidgets.remove(windowType);});
+        connect(newSubWindow, &QWidget::destroyed, this, [this, windowType, receiver]()
+        {
+            mDataReceiverManager.UnRegisterReceiver(receiver);
+            mSubWidgets.remove(windowType);
+        });
         newSubWindow->show();
     }
 }
 
-
 void MainWidget::on_pushButton_2_clicked()
 {
     OpenSubWindow("ParameterAdjustment");
+}
+
+void MainWidget::on_mOpenConnectionDialogButton_clicked()
+{
+    // 先关闭已经打开的通信连接
+    if(mConnectionSettings != nullptr && mConnectionSettings->IsValid() == true)
+    {
+        auto resBt = QMessageBox::warning(this, "警告", "是否关闭已经打开的通信连接？",
+                                          QMessageBox::Yes | QMessageBox::No,
+                                          QMessageBox::No);
+        if(resBt == QMessageBox::No)
+            return;
+
+        // ui->te_Details->clear();
+        mConnectionSettings->Disconnect();
+    }
+
+    // 打开对话框选择新的通信连接（设备）
+    ConnectionDialog *dialog = new ConnectionDialog();
+    int res = dialog->exec();
+
+    // 关闭对话框后处理新选择的通信连接（设备）
+    if(res == QDialog::Accepted)
+    {
+        mConnectionSettings = dialog->GetConnectionSettings();
+        if(mConnectionSettings == nullptr || mConnectionSettings->IsValid() == false)
+        {
+            QMessageBox::warning(this, "警告", "选取的设备无效！");
+            delete mConnectionSettings;
+            return;
+        }
+
+        // 显示新连接的详情
+        ui->te_Details->clear();
+        ui->te_Details->setPlainText(mConnectionSettings->Info());
+        // 连接新的接收数据信号
+        mConnectionSettings->ConnectReadSignal([this](const QByteArray& bytes){OnReadData(bytes);});
+    }
+}
+
+
+void MainWidget::on_cb_AutoClear_checkStateChanged(const Qt::CheckState &arg1)
+{
+    if(arg1 == Qt::Unchecked)
+        mReceiveAutoClearNum = 0;
+    else
+    {
+        bool ok = false;
+        double num = ui->le_ClearThreshold->text().toDouble(&ok);
+        if(ok == true && num > 0)
+            mReceiveAutoClearNum = num * 1000;     // 乘以千(KB)
+        else
+            mReceiveAutoClearNum = 0;
+    }
+}
+
+
+void MainWidget::on_le_ClearThreshold_editingFinished()
+{
+    if(ui->cb_AutoClear->isChecked() == true)
+    {
+        bool ok = false;
+        double num = ui->le_ClearThreshold->text().toDouble(&ok);
+        if(ok == true && num > 0)
+            mReceiveAutoClearNum = num * 1000;     // 乘以千(KB)
+        else
+            mReceiveAutoClearNum = 0;
+    }
 }
 

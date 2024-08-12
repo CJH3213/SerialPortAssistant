@@ -1,9 +1,12 @@
+debug/connectiondialog.o
+debug/connectionsettings.o
 debug/main.o
 debug/mainwidget.o
 debug/parameteradjustment.o
 debug/parameteradjustmentitem.o
 debug/protocol.o
 debug/receivechart.o
+debug/moc_connectiondialog.o
 debug/moc_mainwidget.o
 debug/moc_parameteradjustment.o
 debug/moc_parameteradjustmentitem.o

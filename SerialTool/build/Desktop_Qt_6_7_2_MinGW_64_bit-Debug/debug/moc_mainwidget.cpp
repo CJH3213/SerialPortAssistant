@@ -48,7 +48,8 @@ constexpr auto qt_meta_stringdata_CLASSMainWidgetENDCLASS = QtMocHelpers::string
     "on_mSendHexCheckBox_stateChanged",
     "arg1",
     "on_pushButton_clicked",
-    "on_pushButton_2_clicked"
+    "on_pushButton_2_clicked",
+    "on_mOpenConnectionDialogButton_clicked"
 );
 #else  // !QT_MOC_HAS_STRINGDATA
 #error "qtmochelpers.h not found or too old."
@@ -61,7 +62,7 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSMainWidgetENDCLASS[] = {
       12,       // revision
        0,       // classname
        0,    0, // classinfo
-      10,   14, // methods
+      11,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -69,18 +70,19 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSMainWidgetENDCLASS[] = {
        2,       // signalCount
 
  // signals: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    1,   74,    2, 0x06,    1 /* Public */,
-       4,    0,   77,    2, 0x06,    3 /* Public */,
+       1,    1,   80,    2, 0x06,    1 /* Public */,
+       4,    0,   83,    2, 0x06,    3 /* Public */,
 
  // slots: name, argc, parameters, tag, flags, initial metatype offsets
-       5,    0,   78,    2, 0x08,    4 /* Private */,
-       6,    0,   79,    2, 0x08,    5 /* Private */,
-       7,    0,   80,    2, 0x08,    6 /* Private */,
-       8,    0,   81,    2, 0x08,    7 /* Private */,
-       9,    0,   82,    2, 0x08,    8 /* Private */,
-      10,    1,   83,    2, 0x08,    9 /* Private */,
-      12,    0,   86,    2, 0x08,   11 /* Private */,
-      13,    0,   87,    2, 0x08,   12 /* Private */,
+       5,    0,   84,    2, 0x08,    4 /* Private */,
+       6,    0,   85,    2, 0x08,    5 /* Private */,
+       7,    0,   86,    2, 0x08,    6 /* Private */,
+       8,    0,   87,    2, 0x08,    7 /* Private */,
+       9,    0,   88,    2, 0x08,    8 /* Private */,
+      10,    1,   89,    2, 0x08,    9 /* Private */,
+      12,    0,   92,    2, 0x08,   11 /* Private */,
+      13,    0,   93,    2, 0x08,   12 /* Private */,
+      14,    0,   94,    2, 0x08,   13 /* Private */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::QByteArray,    3,
@@ -93,6 +95,7 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSMainWidgetENDCLASS[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void, QMetaType::Int,   11,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
 
@@ -129,6 +132,8 @@ Q_CONSTINIT const QMetaObject MainWidget::staticMetaObject = { {
         // method 'on_pushButton_clicked'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'on_pushButton_2_clicked'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'on_mOpenConnectionDialogButton_clicked'
         QtPrivate::TypeAndForceComplete<void, std::false_type>
     >,
     nullptr
@@ -150,6 +155,7 @@ void MainWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 7: _t->on_mSendHexCheckBox_stateChanged((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
         case 8: _t->on_pushButton_clicked(); break;
         case 9: _t->on_pushButton_2_clicked(); break;
+        case 10: _t->on_mOpenConnectionDialogButton_clicked(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -190,13 +196,13 @@ int MainWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 10)
+        if (_id < 11)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 10;
+        _id -= 11;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 10)
+        if (_id < 11)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 10;
+        _id -= 11;
     }
     return _id;
 }

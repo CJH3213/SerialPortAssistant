@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QSettings>
 #include "parameteradjustmentitem.h"
+#include "mainwidget.h"
 
 ParameterAdjustment::ParameterAdjustment(MainWidget* baseWidget, QWidget *parent)
     : QWidget(parent)
@@ -12,8 +13,7 @@ ParameterAdjustment::ParameterAdjustment(MainWidget* baseWidget, QWidget *parent
     ui->setupUi(this);
     setWindowTitle("调参窗口");
 
-    mSerialPort = &(baseWidget->mSerialPort);
-
+    mMainWidget = baseWidget;
     connect(baseWidget, SIGNAL(sendReceiveBytes(QByteArray)), this, SLOT(ReadSerialData(QByteArray)));
 
     // 装载之前的窗口状态
@@ -27,6 +27,8 @@ ParameterAdjustment::~ParameterAdjustment()
 
 void ParameterAdjustment::closeEvent(QCloseEvent *event)
 {
+    Q_UNUSED(event)
+
     SaveSettings();
 }
 
@@ -107,9 +109,10 @@ void ParameterAdjustment::RestoreSettings()
     int columnCount = ui->tableWidget->columnCount();
 
     // 加载每列宽度
+    int defaultColumnWidths[] = {100, 100, 100, 220, 100};
     for(int col=0; col<columnCount; ++col)
     {
-        int width = settings.value(QString("TableWidget/columnWidth%1").arg(col), 100).toInt();
+        int width = settings.value(QString("TableWidget/columnWidth%1").arg(col), defaultColumnWidths[col]).toInt();
         ui->tableWidget->setColumnWidth(col, width);
     }
 
@@ -186,6 +189,11 @@ void ParameterAdjustment::SwapRows(int row1, int row2)
     ui->tableWidget->setCellWidget(row2, 3, config1);
 }
 
+void ParameterAdjustment::ProcessData(const QByteArray &bytes)
+{
+    ReadSerialData(bytes);
+}
+
 void ParameterAdjustment::handleButtonClicked()
 {
     QPushButton *button = qobject_cast<QPushButton *>(sender());
@@ -201,7 +209,7 @@ void ParameterAdjustment::handleButtonClicked()
 
         QByteArray data = configWidget->ValueToBytesByConfig(sendValueWidget->text().toFloat());
         data = Protocol::ProtocolEncode(data);
-        mSerialPort->write(data);
+        mMainWidget->WriteData(data);
     }
 }
 

@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>746</width>
-    <height>518</height>
+    <height>528</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>串口示波器</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0">
    <property name="spacing">
@@ -30,7 +30,7 @@
    <item>
     <widget class="Line" name="line">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
     </widget>
    </item>
@@ -40,7 +40,7 @@
       <number>0</number>
      </property>
      <property name="sizeConstraint">
-      <enum>QLayout::SetMinimumSize</enum>
+      <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
      </property>
      <item>
       <layout class="QGridLayout" name="gridLayout_2">
@@ -56,7 +56,7 @@
        <property name="bottomMargin">
         <number>5</number>
        </property>
-       <item row="0" column="1" alignment="Qt::AlignHCenter">
+       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QPushButton" name="mRunOrStopButton">
          <property name="minimumSize">
           <size>
@@ -83,7 +83,7 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1" alignment="Qt::AlignHCenter">
+       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QPushButton" name="mSingleButton">
          <property name="minimumSize">
           <size>
@@ -110,7 +110,7 @@
        <item row="1" column="0">
         <spacer name="horizontalSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -120,7 +120,7 @@
          </property>
         </spacer>
        </item>
-       <item row="0" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+       <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
         <widget class="QPushButton" name="mDirectOrDecodeButton">
          <property name="minimumSize">
           <size>
@@ -150,7 +150,7 @@ Decode</string>
      <item>
       <widget class="Line" name="line_2">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
      </item>
@@ -174,7 +174,7 @@ Decode</string>
        <property name="verticalSpacing">
         <number>10</number>
        </property>
-       <item row="0" column="2" alignment="Qt::AlignHCenter">
+       <item row="0" column="2" alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QLabel" name="label_3">
          <property name="font">
           <font>
@@ -200,7 +200,7 @@ Decode</string>
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QLabel" name="label_6">
            <property name="minimumSize">
             <size>
@@ -219,7 +219,7 @@ Decode</string>
            </property>
           </widget>
          </item>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QDial" name="mVerticalPositionDial">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -240,7 +240,7 @@ Decode</string>
             </size>
            </property>
            <property name="contextMenuPolicy">
-            <enum>Qt::NoContextMenu</enum>
+            <enum>Qt::ContextMenuPolicy::NoContextMenu</enum>
            </property>
            <property name="minimum">
             <number>-100</number>
@@ -259,7 +259,7 @@ Decode</string>
            </property>
           </widget>
          </item>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QLineEdit" name="mVerticalPositionLineEdit">
            <property name="minimumSize">
             <size>
@@ -274,13 +274,13 @@ Decode</string>
             </size>
            </property>
            <property name="alignment">
-            <set>Qt::AlignCenter</set>
+            <set>Qt::AlignmentFlag::AlignCenter</set>
            </property>
           </widget>
          </item>
         </layout>
        </item>
-       <item row="0" column="0" alignment="Qt::AlignHCenter">
+       <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QLabel" name="label">
          <property name="font">
           <font>
@@ -306,7 +306,7 @@ Decode</string>
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QLabel" name="label_2">
            <property name="minimumSize">
             <size>
@@ -325,7 +325,7 @@ Decode</string>
            </property>
           </widget>
          </item>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QDial" name="mHorizontalScaleDial">
            <property name="minimumSize">
             <size>
@@ -340,23 +340,23 @@ Decode</string>
             </size>
            </property>
            <property name="contextMenuPolicy">
-            <enum>Qt::NoContextMenu</enum>
+            <enum>Qt::ContextMenuPolicy::NoContextMenu</enum>
            </property>
            <property name="maximum">
             <number>1000</number>
            </property>
            <property name="value">
-            <number>60</number>
+            <number>10</number>
            </property>
            <property name="sliderPosition">
-            <number>60</number>
+            <number>10</number>
            </property>
            <property name="wrapping">
             <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QLineEdit" name="mHorizontalScaleLineEdit">
            <property name="minimumSize">
             <size>
@@ -371,7 +371,7 @@ Decode</string>
             </size>
            </property>
            <property name="alignment">
-            <set>Qt::AlignCenter</set>
+            <set>Qt::AlignmentFlag::AlignCenter</set>
            </property>
           </widget>
          </item>
@@ -380,7 +380,7 @@ Decode</string>
        <item row="0" column="1" rowspan="4">
         <widget class="Line" name="line_4">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
         </widget>
        </item>
@@ -398,7 +398,7 @@ Decode</string>
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QLabel" name="label_5">
            <property name="minimumSize">
             <size>
@@ -417,7 +417,7 @@ Decode</string>
            </property>
           </widget>
          </item>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QDial" name="mVerticalScaleDial">
            <property name="minimumSize">
             <size>
@@ -432,7 +432,7 @@ Decode</string>
             </size>
            </property>
            <property name="contextMenuPolicy">
-            <enum>Qt::NoContextMenu</enum>
+            <enum>Qt::ContextMenuPolicy::NoContextMenu</enum>
            </property>
            <property name="maximum">
             <number>500</number>
@@ -448,7 +448,7 @@ Decode</string>
            </property>
           </widget>
          </item>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QLineEdit" name="mVerticalScaleLineEdit">
            <property name="minimumSize">
             <size>
@@ -463,7 +463,7 @@ Decode</string>
             </size>
            </property>
            <property name="alignment">
-            <set>Qt::AlignCenter</set>
+            <set>Qt::AlignmentFlag::AlignCenter</set>
            </property>
           </widget>
          </item>
@@ -483,7 +483,7 @@ Decode</string>
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QLabel" name="label_7">
            <property name="minimumSize">
             <size>
@@ -502,7 +502,7 @@ Decode</string>
            </property>
           </widget>
          </item>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QDial" name="mHorizontalPositionDial">
            <property name="minimumSize">
             <size>
@@ -517,7 +517,7 @@ Decode</string>
             </size>
            </property>
            <property name="contextMenuPolicy">
-            <enum>Qt::NoContextMenu</enum>
+            <enum>Qt::ContextMenuPolicy::NoContextMenu</enum>
            </property>
            <property name="minimum">
             <number>-100</number>
@@ -530,7 +530,7 @@ Decode</string>
            </property>
           </widget>
          </item>
-         <item alignment="Qt::AlignHCenter">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
           <widget class="QLineEdit" name="mHorizontalPositionLineEdit">
            <property name="minimumSize">
             <size>
@@ -545,7 +545,7 @@ Decode</string>
             </size>
            </property>
            <property name="alignment">
-            <set>Qt::AlignCenter</set>
+            <set>Qt::AlignmentFlag::AlignCenter</set>
            </property>
           </widget>
          </item>
@@ -554,14 +554,14 @@ Decode</string>
        <item row="1" column="0">
         <widget class="Line" name="line_5">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
         </widget>
        </item>
        <item row="1" column="2">
         <widget class="Line" name="line_6">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -570,14 +570,14 @@ Decode</string>
      <item>
       <widget class="Line" name="line_3">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
      </item>
      <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>

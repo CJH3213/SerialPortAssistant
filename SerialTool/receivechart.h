@@ -5,12 +5,13 @@
 #include "mainwidget.h"
 #include <QtCharts>
 #include "protocol.h"
+#include "idatareceiver.h"
 
 namespace Ui {
 class ReceiveChart;
 }
 
-class ReceiveChart : public QWidget
+class ReceiveChart : public QWidget, public IDataReceiver
 {
     Q_OBJECT
 
@@ -23,25 +24,15 @@ private slots:
     void ReadSerialData(QByteArray bytes);
 
     void on_mVerticalScaleDial_valueChanged(int value);
-
     void on_mVerticalPositionDial_valueChanged(int value);
-
     void on_mHorizontalScaleDial_valueChanged(int value);
-
     void on_mHorizontalPositionDial_valueChanged(int value);
-
     void on_mVerticalScaleLineEdit_editingFinished();
-
     void on_mVerticalPositionLineEdit_editingFinished();
-
     void on_mHorizontalScaleLineEdit_editingFinished();
-
     void on_mHorizontalPositionLineEdit_editingFinished();
-
     void on_mRunOrStopButton_clicked();
-
     void on_mSingleButton_clicked();
-
     void on_mDirectOrDecodeButton_clicked();
 
 private:
@@ -66,6 +57,7 @@ private:
     void SetChartVerticalRange(qreal scale, qreal offset);
     void SetChartHorizontalRange(qreal scale, qreal offset);
 
+    void ProcessData(const QByteArray& bytes) override;
 };
 
 #endif // RECEIVECHART_H

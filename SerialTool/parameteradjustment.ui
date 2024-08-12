@@ -17,13 +17,13 @@
    <item>
     <widget class="QTableWidget" name="tableWidget">
      <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
+      <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
      </property>
      <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
+      <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
      </property>
      <property name="gridStyle">
-      <enum>Qt::SolidLine</enum>
+      <enum>Qt::PenStyle::SolidLine</enum>
      </property>
      <property name="sortingEnabled">
       <bool>false</bool>
@@ -35,7 +35,7 @@
       <bool>true</bool>
      </attribute>
      <attribute name="horizontalHeaderCascadingSectionResizes">
-      <bool>false</bool>
+      <bool>true</bool>
      </attribute>
      <attribute name="horizontalHeaderMinimumSectionSize">
       <number>30</number>
@@ -100,7 +100,7 @@
    <item>
     <widget class="Line" name="line_6">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>
@@ -123,7 +123,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>

@@ -9,16 +9,13 @@ ReceiveChart::ReceiveChart(MainWidget *baseWidget, QWidget *parent)
     , ui(new Ui::ReceiveChart)
 {
     ui->setupUi(this);
-    setWindowTitle("串口示波器");
 
     mFirstTime = QDateTime::currentDateTime();
 
     InitChart();
     InitDials();
 
-    connect(baseWidget, SIGNAL(sendReceiveBytes(QByteArray)), this, SLOT(ReadSerialData(QByteArray)));
-    // for(int i = 0; i< 60; i++)
-    //     mSeries->append(mTimeCount++, QRandomGenerator::global()->bounded(64));
+    // connect(baseWidget, SIGNAL(sendReceiveBytes(QByteArray)), this, SLOT(ReadSerialData(QByteArray)));
 }
 
 ReceiveChart::~ReceiveChart()
@@ -46,15 +43,20 @@ void ReceiveChart::ReadSerialData(QByteArray bytes)
         mLastTime = nowTime;
         SetChartHorizontalRange(ui->mHorizontalScaleLineEdit->text().toDouble(),
                                 ui->mHorizontalPositionLineEdit->text().toDouble());
+        mSeries->clear();
+        foreach (auto &series, mSeriesMap)
+        {
+            series->clear();
+        }
     }
 
     // 不需要解码
     if(mIsDecodeMode == false)
     {
+        QList<QPointF> points;
         for(int i = 0; i< bytes.size(); i++)
-        {
-            mSeries->append(secs + i*0.001, bytes[i]);
-        }
+            points.append(QPointF(secs + i*0.001, bytes[i]));
+        mSeries->append(points);
         return;
     }
 
@@ -146,6 +148,11 @@ void ReceiveChart::SetChartHorizontalRange(qreal scale, qreal offset)
     int secs = mFirstTime.secsTo(mLastTime);
     offset += secs;
     mAxisX->setRange(offset, scale+offset);
+}
+
+void ReceiveChart::ProcessData(const QByteArray &bytes)
+{
+    ReadSerialData(bytes);
 }
 
 void ReceiveChart::on_mVerticalScaleDial_valueChanged(int value)

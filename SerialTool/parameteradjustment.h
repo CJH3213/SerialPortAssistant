@@ -7,13 +7,13 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QComboBox>
-
+#include "idatareceiver.h"
 
 namespace Ui {
 class ParameterAdjustment;
 }
 
-class ParameterAdjustment : public QWidget
+class ParameterAdjustment : public QWidget, public IDataReceiver
 {
     Q_OBJECT
 
@@ -30,15 +30,13 @@ private slots:
     void on_bt_RemoveSelectedItem_clicked();
     // 处理表内按钮事件
     void handleButtonClicked();
-
     void on_bt_MoveUp_clicked();
-
     void on_bt_MoveDown_clicked();
 
 private:
 
     Ui::ParameterAdjustment *ui;
-    QSerialPort *mSerialPort;
+    MainWidget *mMainWidget;
 
     // 保存用户设置
     void SaveSettings();
@@ -48,6 +46,8 @@ private:
     int GetRowForButton(QPushButton *button);
     // 交换表内两行内容
     void SwapRows(int row1, int row2);
+
+    void ProcessData(const QByteArray& bytes) override;
 };
 
 #endif // PARAMETERADJUSTMENT_H

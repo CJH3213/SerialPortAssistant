@@ -46,6 +46,7 @@ public:
     QLabel *label_9;
     QComboBox *mParityComboBox;
     QPushButton *mConnectButton;
+    QPushButton *mOpenConnectionDialogButton;
     QFrame *line;
     QPushButton *pushButton;
     QPushButton *pushButton_2;
@@ -89,7 +90,7 @@ public:
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
         horizontalLayout->setObjectName("horizontalLayout");
-        horizontalLayout->setSizeConstraint(QLayout::SetDefaultConstraint);
+        horizontalLayout->setSizeConstraint(QLayout::SizeConstraint::SetDefaultConstraint);
         label = new QLabel(Widget);
         label->setObjectName("label");
         label->setMaximumSize(QSize(40, 16777215));
@@ -178,6 +179,11 @@ public:
 
         verticalLayout_2->addWidget(mConnectButton);
 
+        mOpenConnectionDialogButton = new QPushButton(Widget);
+        mOpenConnectionDialogButton->setObjectName("mOpenConnectionDialogButton");
+
+        verticalLayout_2->addWidget(mOpenConnectionDialogButton);
+
         line = new QFrame(Widget);
         line->setObjectName("line");
         line->setFrameShape(QFrame::Shape::HLine);
@@ -256,11 +262,11 @@ public:
 
         verticalLayout_4 = new QVBoxLayout();
         verticalLayout_4->setObjectName("verticalLayout_4");
-        verticalLayout_4->setSizeConstraint(QLayout::SetFixedSize);
+        verticalLayout_4->setSizeConstraint(QLayout::SizeConstraint::SetFixedSize);
         horizontalLayout_7 = new QHBoxLayout();
         horizontalLayout_7->setSpacing(6);
         horizontalLayout_7->setObjectName("horizontalLayout_7");
-        horizontalLayout_7->setSizeConstraint(QLayout::SetMinimumSize);
+        horizontalLayout_7->setSizeConstraint(QLayout::SizeConstraint::SetMinimumSize);
         label_3 = new QLabel(Widget);
         label_3->setObjectName("label_3");
         label_3->setMaximumSize(QSize(36, 20));
@@ -288,7 +294,7 @@ public:
 
         horizontalLayout_9 = new QHBoxLayout();
         horizontalLayout_9->setObjectName("horizontalLayout_9");
-        horizontalLayout_9->setSizeConstraint(QLayout::SetMinimumSize);
+        horizontalLayout_9->setSizeConstraint(QLayout::SizeConstraint::SetMinimumSize);
         mSendHexCheckBox = new QCheckBox(Widget);
         mSendHexCheckBox->setObjectName("mSendHexCheckBox");
         mSendHexCheckBox->setMaximumSize(QSize(85, 19));
@@ -341,6 +347,7 @@ public:
         label_8->setText(QCoreApplication::translate("Widget", "\345\201\234\346\255\242\344\275\215\357\274\232", nullptr));
         label_9->setText(QCoreApplication::translate("Widget", "\346\240\241\351\252\214\344\275\215\357\274\232", nullptr));
         mConnectButton->setText(QCoreApplication::translate("Widget", "\346\211\223\345\274\200\344\270\262\345\217\243", nullptr));
+        mOpenConnectionDialogButton->setText(QCoreApplication::translate("Widget", "\351\205\215\347\275\256\351\200\232\344\277\241\346\226\271\345\274\217", nullptr));
         pushButton->setText(QCoreApplication::translate("Widget", "\346\216\245\346\224\266\347\272\277\345\233\276", nullptr));
         pushButton_2->setText(QCoreApplication::translate("Widget", "\350\260\203\345\217\202", nullptr));
         label_2->setText(QCoreApplication::translate("Widget", "\346\216\245\346\224\266\357\274\232", nullptr));
