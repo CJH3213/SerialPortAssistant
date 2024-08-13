@@ -43,7 +43,6 @@ void ReceiveChart::ReadSerialData(QByteArray bytes)
         mLastTime = nowTime;
         SetChartHorizontalRange(ui->mHorizontalScaleLineEdit->text().toDouble(),
                                 ui->mHorizontalPositionLineEdit->text().toDouble());
-        mSeries->clear();
         foreach (auto &series, mSeriesMap)
         {
             series->clear();
@@ -55,8 +54,8 @@ void ReceiveChart::ReadSerialData(QByteArray bytes)
     {
         QList<QPointF> points;
         for(int i = 0; i< bytes.size(); i++)
-            points.append(QPointF(secs + i*0.001, bytes[i]));
-        mSeries->append(points);
+            points.append(QPointF(secs + i*0.001f, bytes[i]));
+        mSeriesMap["Direct"]->append(points);
         return;
     }
 
@@ -83,6 +82,7 @@ void ReceiveChart::ReadSerialData(QByteArray bytes)
                 continue;
 
             series = new QLineSeries;
+            series->setUseOpenGL(true);    // 使用OpenGL硬件加速
             series->setName(name);
             QColor color((Qt::GlobalColor)(mSeriesMap.count()+4));   // map的序号去索引颜色
             series->setColor(color);
@@ -115,13 +115,15 @@ void ReceiveChart::InitChart()
     mAxisY->setRange(-128, 127);
 
     // 曲线
-    mSeries = new QLineSeries;
-    mSeries->setName("Direct");
-    mSeries->setColor(Qt::red);
-    mSeries->setPen(QPen(Qt::red, 2));
-    mChart->addSeries(mSeries);
-    mSeries->attachAxis(mAxisX);
-    mSeries->attachAxis(mAxisY);
+    QLineSeries *series = new QLineSeries;
+    series->setUseOpenGL(true);    // 使用OpenGL硬件加速
+    series->setName("Direct");
+    series->setColor(Qt::red);
+    series->setPen(QPen(Qt::red, 2));
+    mChart->addSeries(series);
+    series->attachAxis(mAxisX);
+    series->attachAxis(mAxisY);
+    mSeriesMap[series->name()] = series;
 }
 
 void ReceiveChart::InitDials()

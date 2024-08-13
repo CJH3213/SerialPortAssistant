@@ -40,7 +40,6 @@ private:
     QChart *mChart;
     QValueAxis *mAxisX;
     QValueAxis *mAxisY;
-    QLineSeries *mSeries;
     QMap<QString, QLineSeries*> mSeriesMap;
     // QChartView *mChartView;
     int mAxisXRange;

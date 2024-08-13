@@ -274,7 +274,7 @@ public:
 
     void retranslateUi(QDialog *ConnectionDialog)
     {
-        ConnectionDialog->setWindowTitle(QCoreApplication::translate("ConnectionDialog", "Dialog", nullptr));
+        ConnectionDialog->setWindowTitle(QCoreApplication::translate("ConnectionDialog", "\351\205\215\347\275\256\351\200\232\350\256\257\346\226\271\345\274\217", nullptr));
         label->setText(QCoreApplication::translate("ConnectionDialog", "\344\270\262\345\217\243\357\274\232", nullptr));
         label_2->setText(QCoreApplication::translate("ConnectionDialog", "\346\263\242\347\211\271\347\216\207\357\274\232", nullptr));
         cb_Baudrate->setItemText(0, QCoreApplication::translate("ConnectionDialog", "1200", nullptr));

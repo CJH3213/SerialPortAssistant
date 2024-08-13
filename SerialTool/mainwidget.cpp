@@ -47,6 +47,10 @@ void MainWidget::closeEvent(QCloseEvent *event)
             return;
         }
     }
+
+    // 切断连接
+    mConnectionSettings->Disconnect();
+
     // 以下为关闭应用软件前的保存处理
     QSettings settings("./MyApp.ini", QSettings::IniFormat);
     settings.setValue("MainWidget/Geometry", this->saveGeometry());
@@ -212,7 +216,11 @@ void MainWidget::OpenSubWindow(const QString &windowType)
 {
     // 如果子窗口已经存在，就不要再打开新的
     if(mSubWidgets.contains(windowType))
+    {
+        auto *widget = mSubWidgets[windowType];
+        widget->raise();
         return;
+    }
 
     QWidget *newSubWindow = nullptr;
     if(windowType == "ReceiveChart")
